@@ -1,25 +1,35 @@
 
 import streamlit as st
-from PIL import Image
+import plotly.graph_objects as go
+import numpy as np
 
-# Data structure
-equipment_data = {
-    "Laryngoscope": {"explanation": "Used for visualization of the glottis.", "usage": "Check light/blade."},
-    "Capnograph": {"explanation": "Monitors CO2 levels.", "usage": "Verify ETT placement."}
-}
+st.title("3D OT Instrument Explorer")
 
-st.title("OT Equipment Navigator")
-selection = st.sidebar.selectbox("Select Equipment", list(equipment_data.keys()))
+# 1. 3D Model Logic (Example: Sphere representing an instrument tip)
+def get_3d_model():
+    phi = np.linspace(0, 2*np.pi, 20)
+    theta = np.linspace(0, np.pi, 20)
+    phi, theta = np.meshgrid(phi, theta)
+    x = np.sin(theta) * np.cos(phi)
+    y = np.sin(theta) * np.sin(phi)
+    z = np.cos(theta)
+    return x, y, z
 
-st.header(selection)
+x, y, z = get_3d_model()
 
-# Adjustable image logic
-scale = st.slider("Adjust Diagram Zoom", 0.5, 2.0, 1.0)
-base_width = 400
-dynamic_width = int(base_width * scale)
+# 2. Plotting the 3D figure
+fig = go.Figure(data=[go.Surface(z=z, x=x, y=y, colorscale='Viridis')])
+fig.update_layout(title='3D Laryngoscope Blade Model', autosize=False,
+                  width=500, height=500, margin=dict(l=65, r=50, b=65, t=90))
 
-# Using a placeholder image URL
-st.image("https://via.placeholder.com/600x400", width=dynamic_width, caption=f"Diagram of {selection}")
+# 3. Display in Streamlit
+st.plotly_chart(fig)
 
-st.subheader("Explanation")
-st.write(equipment_data[selection]["explanation"])
+# 4. Expert Clinical Explanation
+st.subheader("Clinical Importance")
+st.write("""
+The 3D visualization allows trainees to inspect the curvature of the blade, 
+which is critical for displacing the tongue and visualizing the glottis. 
+Understanding the 3D geometry helps in preventing dental trauma and 
+optimizing the angle of the laryngoscope during intubation.
+""")
